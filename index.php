@@ -21,12 +21,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $date = $_POST['date'];
         $time = $_POST['time'];
 
-        //Validate the task
         if (!empty($task)) {
             //Append the task, date, and time to the to-do list file
             file_put_contents($filename_todo, $task . ' - Due: ' . $date . ' ' . $time . PHP_EOL, FILE_APPEND);
 
-            //Schedule a notification
+            //Schedule a notification with javascript
             echo "<script>scheduleNotification('$task', '$date', '$time');
             function scheduleNotification(task, date, time) {
                 // Parse the date and time
@@ -42,38 +41,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             </script>";
         }
-    } elseif (isset($_POST['complete'])) {
+    }
+    //Complete button, transfer tasks to completed list
+    elseif (isset($_POST['complete'])) {
         $completedTaskIndex = $_POST['completedTaskIndex'];
 
         $tasks = file($filename_todo, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
-        //Check if the index is valid
         if (isset($tasks[$completedTaskIndex])) {
             $completedTask = $tasks[$completedTaskIndex];
 
-            //Remove the completed task from the to-do list
             unset($tasks[$completedTaskIndex]);
 
-            //Write the updated to-do list
             file_put_contents($filename_todo, implode(PHP_EOL, $tasks));
 
-            //Append the completed task to the completed tasks list
             file_put_contents($filename_completed, $completedTask . PHP_EOL, FILE_APPEND);
         }
-    } elseif (isset($_POST['delete'])) {
+    }
+    //Delete task button functionality
+    elseif (isset($_POST['delete'])) {
         $deletedTaskIndex = $_POST['deletedTaskIndex'];
 
         $completedTasks = file($filename_completed, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
         if (isset($completedTasks[$deletedTaskIndex])) {
-            //Remove the completed task from the completed tasks list
+
             unset($completedTasks[$deletedTaskIndex]);
 
-            //Write the updated completed tasks list
             file_put_contents($filename_completed, implode(PHP_EOL, $completedTasks));
         }
-    } elseif (isset($_POST['delete_all'])) {
-        //Delete all completed tasks
+    }
+    //Delete all tasks button functionality
+    elseif (isset($_POST['delete_all'])) {
         file_put_contents($filename_completed, '');
     }
 }
